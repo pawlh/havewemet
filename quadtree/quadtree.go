@@ -3,16 +3,16 @@ package quadtree
 // maxObjects the maximum number of objects in a quadtree node before it splits into 4 sub nodes
 const maxObjects = 10
 
-type Quadtree struct {
-	node
-	allPoints []*Point
+type Quadtree[V any] struct {
+	node[V]
+	allPoints []*Point[V]
 }
 
-func NewQuadTree() Quadtree {
-	return Quadtree{}
+func NewQuadTree[V any]() Quadtree[V] {
+	return Quadtree[V]{}
 }
 
-func (q *Quadtree) Insert(p *Point) {
+func (q *Quadtree[V]) Insert(p *Point[V]) {
 	q.allPoints = append(q.allPoints, p)
 
 	if !q.contains(*p) {
@@ -22,14 +22,14 @@ func (q *Quadtree) Insert(p *Point) {
 	q.node.insert(p)
 }
 
-func (q *Quadtree) resort() {
+func (q *Quadtree[V]) resort() {
 	q.clearSubNodes()
 	for _, p := range q.allPoints {
 		q.insert(p)
 	}
 }
 
-func (q *Quadtree) grow(point Point) {
+func (q *Quadtree[V]) grow(point Point[V]) {
 	if point.x < q.x1 {
 		leftXDiff := q.x1 - point.x
 		q.x1 -= leftXDiff * 2
@@ -51,21 +51,21 @@ func (q *Quadtree) grow(point Point) {
 	}
 }
 
-func (q *Quadtree) contains(point Point) bool {
+func (q *Quadtree[V]) contains(point Point[V]) bool {
 	return point.x >= q.x1 && point.x <= q.x2 && point.y >= q.y1 && point.y <= q.y2
 }
 
-func (q *Quadtree) clearSubNodes() {
-	q.subNodes = [4]*node{}
+func (q *Quadtree[V]) clearSubNodes() {
+	q.subNodes = [4]*node[V]{}
 }
 
-type node struct {
+type node[V any] struct {
 	x1, y1, x2, y2 float64
-	points         []*Point
-	subNodes       [4]*node
+	points         []*Point[V]
+	subNodes       [4]*node[V]
 }
 
-func (n *node) insert(p *Point) {
+func (n *node[V]) insert(p *Point[V]) {
 	if !n.isLeaf() {
 		subNodeIndex := n.pickSubNode(*p)
 		n.subNodes[subNodeIndex].insert(p)
@@ -79,11 +79,11 @@ func (n *node) insert(p *Point) {
 	}
 }
 
-func (n *node) isLeaf() bool {
+func (n *node[V]) isLeaf() bool {
 	return n.subNodes[0] == nil
 }
 
-func (n *node) pickSubNode(p Point) int {
+func (n *node[V]) pickSubNode(p Point[V]) int {
 	if p.x <= (n.x1+n.x2)/2 {
 		if p.y < (n.y1+n.y2)/2 {
 			return 0
@@ -99,15 +99,15 @@ func (n *node) pickSubNode(p Point) int {
 	}
 }
 
-func (n *node) split() {
+func (n *node[V]) split() {
 
 	xMid := (n.x1 + n.x2) / 2
 	yMid := (n.y1 + n.y2) / 2
 
-	n.subNodes[0] = &node{x1: n.x1, y1: n.y1, x2: xMid, y2: yMid}
-	n.subNodes[1] = &node{x1: xMid, y1: n.y1, x2: n.x2, y2: yMid}
-	n.subNodes[2] = &node{x1: n.x1, y1: yMid, x2: xMid, y2: n.y2}
-	n.subNodes[3] = &node{x1: xMid, y1: yMid, x2: n.x2, y2: n.y2}
+	n.subNodes[0] = &node[V]{x1: n.x1, y1: n.y1, x2: xMid, y2: yMid}
+	n.subNodes[1] = &node[V]{x1: xMid, y1: n.y1, x2: n.x2, y2: yMid}
+	n.subNodes[2] = &node[V]{x1: n.x1, y1: yMid, x2: xMid, y2: n.y2}
+	n.subNodes[3] = &node[V]{x1: xMid, y1: yMid, x2: n.x2, y2: n.y2}
 
 	for _, p := range n.points {
 		subNodeIndex := n.pickSubNode(*p)
@@ -117,10 +117,11 @@ func (n *node) split() {
 	n.points = nil
 }
 
-type Point struct {
-	x, y float64
+type Point[V any] struct {
+	x, y  float64
+	value V
 }
 
-func NewPoint(x, y float64) *Point {
-	return &Point{x: x, y: y}
+func NewPoint[V any](x, y float64, value V) *Point[V] {
+	return &Point[V]{x: x, y: y, value: value}
 }
