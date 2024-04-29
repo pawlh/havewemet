@@ -19,6 +19,7 @@ func (q *Quadtree[V]) Insert(p *Point[V]) {
 
 	if !q.contains(*p) {
 		q.grow(*p)
+		q.resort()
 	}
 
 	q.node.insert(p)
