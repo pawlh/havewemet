@@ -1,5 +1,7 @@
 package quadtree
 
+import "math"
+
 // maxObjects the maximum number of objects in a quadtree node before it splits into 4 sub nodes
 const maxObjects = 10
 
@@ -20,6 +22,12 @@ func (q *Quadtree[V]) Insert(p *Point[V]) {
 	}
 
 	q.node.insert(p)
+}
+
+func (q *Quadtree[V]) QueryRadius(x, y, radius float64) []*Point[V] {
+	var points []*Point[V]
+	q.queryRadius(x, y, radius, &points)
+	return points
 }
 
 func (q *Quadtree[V]) resort() {
@@ -117,11 +125,42 @@ func (n *node[V]) split() {
 	n.points = nil
 }
 
+func (n *node[V]) queryRadius(x, y, radius float64, points *[]*Point[V]) {
+	if !n.intersectsCircle(x, y, radius) {
+		return
+	}
+
+	for _, p := range n.points {
+		if p.distance(x, y) <= radius {
+			*points = append(*points, p)
+		}
+	}
+
+	if !n.isLeaf() {
+		for _, subNode := range n.subNodes {
+			subNode.queryRadius(x, y, radius, points)
+		}
+	}
+}
+
+func (n *node[V]) intersectsCircle(x, y, radius float64) bool {
+	if x+radius < n.x1 || x-radius > n.x2 || y+radius < n.y1 || y-radius > n.y2 {
+		return false
+	}
+
+	return true
+
+}
+
 type Point[V any] struct {
 	x, y  float64
-	value V
+	Value V
 }
 
 func NewPoint[V any](x, y float64, value V) *Point[V] {
-	return &Point[V]{x: x, y: y, value: value}
+	return &Point[V]{x: x, y: y, Value: value}
+}
+
+func (p *Point[V]) distance(x, y float64) float64 {
+	return math.Sqrt(math.Pow(p.x-x, 2) + math.Pow(p.y-y, 2))
 }
