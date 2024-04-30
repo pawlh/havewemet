@@ -2,9 +2,6 @@ package quadtree
 
 import "math"
 
-// maxObjects the maximum number of objects in a quadtree node before it splits into 4 sub nodes
-const maxObjects = 10
-
 type QuadTree[V any] struct {
 	node[V]
 	allPoints []*Point[V]
@@ -73,6 +70,7 @@ type node[V any] struct {
 	x1, y1, x2, y2 float64
 	points         []*Point[V]
 	subNodes       [4]*node[V]
+	maxObjects     int
 }
 
 func (n *node[V]) insert(p *Point[V]) {
