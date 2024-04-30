@@ -15,12 +15,12 @@ func NewQuadTree[V any]() QuadTree[V] {
 }
 
 func (q *QuadTree[V]) Insert(p *Point[V]) {
-	q.allPoints = append(q.allPoints, p)
-
 	if !q.contains(*p) {
 		q.grow(*p)
 		q.resort()
 	}
+
+	q.allPoints = append(q.allPoints, p)
 
 	q.node.insert(p)
 }
@@ -65,6 +65,7 @@ func (q *QuadTree[V]) contains(point Point[V]) bool {
 }
 
 func (q *QuadTree[V]) clearSubNodes() {
+	q.points = nil
 	q.subNodes = [4]*node[V]{}
 }
 
