@@ -5,16 +5,16 @@ import "math"
 // maxObjects the maximum number of objects in a quadtree node before it splits into 4 sub nodes
 const maxObjects = 10
 
-type Quadtree[V any] struct {
+type QuadTree[V any] struct {
 	node[V]
 	allPoints []*Point[V]
 }
 
-func NewQuadTree[V any]() Quadtree[V] {
-	return Quadtree[V]{}
+func NewQuadTree[V any]() QuadTree[V] {
+	return QuadTree[V]{}
 }
 
-func (q *Quadtree[V]) Insert(p *Point[V]) {
+func (q *QuadTree[V]) Insert(p *Point[V]) {
 	q.allPoints = append(q.allPoints, p)
 
 	if !q.contains(*p) {
@@ -25,20 +25,20 @@ func (q *Quadtree[V]) Insert(p *Point[V]) {
 	q.node.insert(p)
 }
 
-func (q *Quadtree[V]) QueryRadius(x, y, radius float64) []*Point[V] {
+func (q *QuadTree[V]) QueryRadius(x, y, radius float64) []*Point[V] {
 	var points []*Point[V]
 	q.queryRadius(x, y, radius, &points)
 	return points
 }
 
-func (q *Quadtree[V]) resort() {
+func (q *QuadTree[V]) resort() {
 	q.clearSubNodes()
 	for _, p := range q.allPoints {
 		q.insert(p)
 	}
 }
 
-func (q *Quadtree[V]) grow(point Point[V]) {
+func (q *QuadTree[V]) grow(point Point[V]) {
 	if point.x < q.x1 {
 		leftXDiff := q.x1 - point.x
 		q.x1 -= leftXDiff * 2
@@ -60,11 +60,11 @@ func (q *Quadtree[V]) grow(point Point[V]) {
 	}
 }
 
-func (q *Quadtree[V]) contains(point Point[V]) bool {
+func (q *QuadTree[V]) contains(point Point[V]) bool {
 	return point.x >= q.x1 && point.x <= q.x2 && point.y >= q.y1 && point.y <= q.y2
 }
 
-func (q *Quadtree[V]) clearSubNodes() {
+func (q *QuadTree[V]) clearSubNodes() {
 	q.subNodes = [4]*node[V]{}
 }
 
