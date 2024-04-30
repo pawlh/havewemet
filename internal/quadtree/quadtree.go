@@ -82,7 +82,7 @@ func (n *node[V]) insert(p *Point[V]) {
 
 	n.points = append(n.points, p)
 
-	if len(n.points) > maxObjects {
+	if len(n.points) > n.maxObjects {
 		n.split()
 	}
 }
@@ -92,17 +92,17 @@ func (n *node[V]) isLeaf() bool {
 }
 
 func (n *node[V]) pickSubNode(p Point[V]) int {
-	if p.x <= (n.x1+n.x2)/2 {
-		if p.y < (n.y1+n.y2)/2 {
+	if p.x >= (n.x1+n.x2)/2 {
+		if p.y > (n.y1+n.y2)/2 {
 			return 0
 		} else {
-			return 1
+			return 3
 		}
 	} else {
-		if p.y < (n.y1+n.y2)/2 {
-			return 2
+		if p.y > (n.y1+n.y2)/2 {
+			return 1
 		} else {
-			return 3
+			return 2
 		}
 	}
 }
@@ -112,10 +112,10 @@ func (n *node[V]) split() {
 	xMid := (n.x1 + n.x2) / 2
 	yMid := (n.y1 + n.y2) / 2
 
-	n.subNodes[0] = &node[V]{x1: n.x1, y1: n.y1, x2: xMid, y2: yMid}
-	n.subNodes[1] = &node[V]{x1: xMid, y1: n.y1, x2: n.x2, y2: yMid}
-	n.subNodes[2] = &node[V]{x1: n.x1, y1: yMid, x2: xMid, y2: n.y2}
-	n.subNodes[3] = &node[V]{x1: xMid, y1: yMid, x2: n.x2, y2: n.y2}
+	n.subNodes[0] = &node[V]{x1: xMid, y1: yMid, x2: n.x2, y2: n.y2, maxObjects: n.maxObjects}
+	n.subNodes[1] = &node[V]{x1: n.x1, y1: yMid, x2: xMid, y2: n.y2, maxObjects: n.maxObjects}
+	n.subNodes[2] = &node[V]{x1: n.x1, y1: n.y1, x2: xMid, y2: yMid, maxObjects: n.maxObjects}
+	n.subNodes[3] = &node[V]{x1: xMid, y1: n.y1, x2: n.x2, y2: yMid, maxObjects: n.maxObjects}
 
 	for _, p := range n.points {
 		subNodeIndex := n.pickSubNode(*p)
